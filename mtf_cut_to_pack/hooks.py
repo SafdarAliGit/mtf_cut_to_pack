@@ -8,6 +8,11 @@ app_license = "mit"
 # Includes in <head>
 # ------------------
 
+fixtures = [
+	{"dt": "Custom Field", "filters": [["module", "=", "MTF Cut To Pack"]]},
+	{"dt": "Property Setter", "filters": [["module", "=", "MTF Cut To Pack"]]},
+]
+
 # include js, css files in header of desk.html
 # app_include_css = "/assets/mtf_cut_to_pack/css/mtf_cut_to_pack.css"
 # app_include_js = "/assets/mtf_cut_to_pack/js/mtf_cut_to_pack.js"
@@ -116,13 +121,11 @@ app_license = "mit"
 # ---------------
 # Hook on document methods and events
 
-# doc_events = {
-# 	"*": {
-# 		"on_update": "method",
-# 		"on_cancel": "method",
-# 		"on_trash": "method"
-# 	}
-# }
+doc_events = {
+	"Purchase Receipt": {
+		"on_submit": "mtf_cut_to_pack.overrides.purchase_receipt.set_batch_color",
+	},
+}
 
 # Scheduled Tasks
 # ---------------
