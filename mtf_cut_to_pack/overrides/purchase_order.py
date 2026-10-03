@@ -22,15 +22,20 @@ def make_gate_pass(source_name):
 	se.remarks = _("Gate Pass against Purchase Order {0} ({1})").format(po.name, po.supplier)
 
 	for row in po.items:
-		if not row.get("custom_fabric_item"):
+		# Fall back to the PO row's own item when it is itself a stock (fabric) item
+		item_code = row.get("custom_fabric_item")
+		if not item_code and frappe.db.get_value("Item", row.item_code, "is_stock_item"):
+			item_code = row.item_code
+		if not item_code:
 			continue
-		stock_uom = frappe.db.get_value("Item", row.custom_fabric_item, "stock_uom")
+		stock_uom = frappe.db.get_value("Item", item_code, "stock_uom")
+		qty = flt(row.stock_qty) if item_code == row.item_code else flt(row.qty)
 		se.append(
 			"items",
 			{
-				"item_code": row.custom_fabric_item,
-				"qty": flt(row.qty),
-				"transfer_qty": flt(row.qty),
+				"item_code": item_code,
+				"qty": qty,
+				"transfer_qty": qty,
 				"uom": stock_uom,
 				"stock_uom": stock_uom,
 				"conversion_factor": 1,
@@ -39,6 +44,6 @@ def make_gate_pass(source_name):
 		)
 
 	if not se.items:
-		frappe.throw(_("No Fabric Item found in Purchase Order {0}").format(po.name))
+		frappe.throw(_("No Fabric Item or stock item found in Purchase Order {0}").format(po.name))
 
 	return se
